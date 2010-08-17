@@ -280,6 +280,25 @@ static Channel *lookup_chan(const char *name) {
 	return NULL;
 }
 
+static void write_names(const char *channel) {
+	Channel *c;
+	Nick *n;
+	static char outfile[256];
+  	FILE *out = NULL;
+
+	if(!(c = lookup_chan(channel))) return;
+	
+	create_filepath(outfile, sizeof(outfile), (char *)channel, "names");
+
+	if(!(out = fopen(outfile, "w"))) return;
+
+	for(n = c->nicks; n; n = n->next) {
+		fprintf(out, "%s\n", n->name);
+	}
+	
+	fclose(out);  
+}
+
 static void add_name(const char *chan, const char *name) {
 	Channel *c;
 	Nick *n;
@@ -287,12 +306,13 @@ static void add_name(const char *chan, const char *name) {
 	for(n = c->nicks; n; n = n->next)
 		if(!strcmp(name, n->name)) return;
 	if(!(n = malloc(sizeof(Nick)))) {
-		perror("ii: cannot allocate memory");
+	       	perror("ii: cannot allocate memory");
 		exit(EXIT_FAILURE);
 	}
 	n->name = strdup(name);
 	n->next = c->nicks;
 	c->nicks = n;
+	write_names(chan);
 }
 
 static int rm_name(const char *chan, const char *name) {
@@ -309,6 +329,7 @@ static int rm_name(const char *chan, const char *name) {
 		}
 	}
 	return 0;
+	write_names(chan);
 }
 
 static void proc_names(const char *chan, char *names) {
