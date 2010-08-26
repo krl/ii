@@ -328,8 +328,8 @@ static int rm_name(const char *chan, const char *name) {
 			return 1;
 		}
 	}
-	return 0;
 	write_names(chan);
+	return 0;
 }
 
 static void proc_names(const char *chan, char *names) {
