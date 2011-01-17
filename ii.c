@@ -249,14 +249,14 @@ static size_t tokenize(char **result, size_t reslen, char *str, char delim) {
 		if(*n == delim) {
 			*n = 0;
 			result[i++] = p;
-			printf("1 tokenize i: %i : %s\n", i, p);
+			//printf("1 tokenize i: %i : %s\n", i, p);
 			p = ++n;
 		} else
 			n++;
 	}
 	if(i<reslen && p < n && strlen(p)) {
 		result[i++] = p;
-		printf("2 tokenize i: %i : %s\n", i, p);
+		//printf("2 tokenize i: %i : %s\n", i, p);
 	}
 	return i;				/* number of tokens */
 }
@@ -274,7 +274,7 @@ static void print_out(char *channel, char *buf) {
 	}
 	
 	if (!converted) {
-	  printf("ii: cannot convert\n");
+	  //printf("ii: cannot convert\n");
 	  return;
 	}
 
@@ -315,7 +315,9 @@ static void write_names(const char *channel) {
 	for(n = c->nicks; n; n = n->next) {
 		fprintf(out, "%s ", n->name);
 	}
-	
+	// end with newline
+	fprintf(out, "\n");
+
 	fclose(out);  
 }
 
