@@ -22,6 +22,8 @@
 #include <openssl/rand.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <glib.h>
+#include <glib/gunicode.h>
 
 #ifndef PIPE_BUF /* FreeBSD don't know PIPE_BUF */
 #define PIPE_BUF 4096
@@ -247,12 +249,15 @@ static size_t tokenize(char **result, size_t reslen, char *str, char delim) {
 		if(*n == delim) {
 			*n = 0;
 			result[i++] = p;
+			printf("1 tokenize i: %i : %s\n", i, p);
 			p = ++n;
 		} else
 			n++;
 	}
-	if(i<reslen && p < n && strlen(p))
+	if(i<reslen && p < n && strlen(p)) {
 		result[i++] = p;
+		printf("2 tokenize i: %i : %s\n", i, p);
+	}
 	return i;				/* number of tokens */
 }
 
@@ -260,6 +265,18 @@ static void print_out(char *channel, char *buf) {
 	static char outfile[256], server[256], buft[18];
 	FILE *out = NULL;
 	time_t t = time(0);
+	char *converted;
+
+	if (g_utf8_validate(buf, strlen(buf), NULL))
+	  converted = buf;
+	else {
+	  converted = g_convert_with_fallback(buf, strlen(buf), "UTF-8", "CP1252", NULL, NULL, NULL, NULL);
+	}
+	
+	if (!converted) {
+	  printf("ii: cannot convert\n");
+	  return;
+	}
 
 	if(channel) snprintf(server, sizeof(server), "-!- %s", channel);
 	if(strstr(buf, server)) channel="";
@@ -268,8 +285,11 @@ static void print_out(char *channel, char *buf) {
 	if(!(out = fopen(outfile, "a"))) return;
 
 	strftime(buft, sizeof(buft), "%F %R", localtime(&t));
-	fprintf(out, "%s %s\n", buft, buf);
+	fprintf(out, "%s %s\n", buft, converted);
 	fclose(out);
+
+	if (buf != converted)
+	  g_free(converted);
 }
 
 static Channel *lookup_chan(const char *name) {
@@ -293,7 +313,7 @@ static void write_names(const char *channel) {
 	if(!(out = fopen(outfile, "w"))) return;
 
 	for(n = c->nicks; n; n = n->next) {
-		fprintf(out, "%s\n", n->name);
+		fprintf(out, "%s ", n->name);
 	}
 	
 	fclose(out);  
@@ -439,6 +459,9 @@ static void proc_server_cmd(char *buf) {
 	char *argv[TOK_LAST], *cmd = NULL, *p = NULL;
 	int i;
 
+	// debug
+	printf("%s\n",buf);
+	
 	if(!buf || *buf=='\0')
 		return;
 
@@ -491,7 +514,7 @@ static void proc_server_cmd(char *buf) {
 			return;
 		snprintf(message, PIPE_BUF, "%s%s", argv[TOK_ARG] ? argv[TOK_ARG] : "", argv[TOK_TEXT] ? argv[TOK_TEXT] : "");
 		print_out(0, message);
-		proc_names(p, argv[TOK_TEXT]);
+		proc_names(p, argv[TOK_TEXT]); // stupid bitlbee bugfix attempt
 		return;
 	} else if(!argv[TOK_NICKSRV] || !argv[TOK_USER]) {	/* server command */
 		snprintf(message, PIPE_BUF, "%s%s", argv[TOK_ARG] ? argv[TOK_ARG] : "", argv[TOK_TEXT] ? argv[TOK_TEXT] : "");
@@ -519,7 +542,7 @@ static void proc_server_cmd(char *buf) {
 		quit_name(argv[TOK_NICKSRV], argv[TOK_USER], argv[TOK_TEXT]);
 		return;
 	} else if(!strncmp("NICK", argv[TOK_CMD], 5)) {
-		nick_name(argv[TOK_NICKSRV], argv[TOK_TEXT]);
+   	        nick_name(argv[TOK_NICKSRV], argv[TOK_TEXT] || argv[TOK_CHAN]); // naive bugfix?
 		return;
 	} else if(!strncmp("TOPIC", argv[TOK_CMD], 6))
 		snprintf(message, PIPE_BUF, "-!- %s changed topic to \"%s\"", argv[TOK_NICKSRV], argv[TOK_TEXT] ? argv[TOK_TEXT] : "");

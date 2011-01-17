@@ -15,8 +15,8 @@ LIBDIR      = ${PREFIX}/lib
 VERSION     = 1.4
 
 # includes and libs
-INCLUDES    = -I. -I${INCDIR} -I/usr/include
-LIBS        = -L${LIBDIR} -L/usr/lib -lc -lssl
+INCLUDES    = -I. -I${INCDIR} -I/usr/include `pkg-config --cflags glib-2.0`
+LIBS        = -L${LIBDIR} -L/usr/lib -lc -lssl `pkg-config --libs glib-2.0`
 # uncomment and comment other variables for compiling on Solaris
 #LIBS = -L${LIBDIR} -L/usr/lib -lc -lsocket -lnsl
 #CFLAGS      = -g ${INCLUDES} -DVERSION=\"${VERSION}\"
