@@ -441,7 +441,7 @@ static void proc_channels_input(Channel *c, char *buf) {
 				snprintf(message, PIPE_BUF, "PART %s :%s\r\n", c->name, &buf[3]);
 			else
 				snprintf(message, PIPE_BUF,
-						"PART %s :ii - 500 SLOC are too much\r\n", c->name);
+						"PART %s :github.com/krl/ii - for bloatlovers!\r\n", c->name);
 			WRITE(irc, message);
 			close(c->fd);
 			create_filepath(infile, sizeof(infile), c->name, "in");
@@ -461,8 +461,8 @@ static void proc_server_cmd(char *buf) {
 	char *argv[TOK_LAST], *cmd = NULL, *p = NULL;
 	int i;
 
-	// debug
-	printf("%s\n",buf);
+	/* // debug */
+	/* printf("%s\n",buf); */
 	
 	if(!buf || *buf=='\0')
 		return;
