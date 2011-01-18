@@ -45,7 +45,7 @@ struct Channel {
 	Channel *next;
 };
 
-#define PING_TIMEOUT 300
+#define PING_TIMEOUT 1000
 #define SERVER_PORT 6667
 #define SSL_SERVER_PORT 6697
 #define WRITE(con, mes) (use_ssl ? sslwrite(mes, strlen(mes)) : write(con->irc, mes, strlen(mes)))
@@ -310,13 +310,16 @@ static void write_names(const char *channel) {
 	
 	create_filepath(outfile, sizeof(outfile), (char *)channel, "names");
 
-	if(!(out = fopen(outfile, "w"))) return;
+	if(c->nicks) {
 
-	for(n = c->nicks; n; n = n->next) {
-		fprintf(out, "%s ", n->name);
+	  if(!(out = fopen(outfile, "w"))) return;
+
+	  for(n = c->nicks; n; n = n->next) {
+	    fprintf(out, "%s ", n->name);
+	  }
+	  // end with newline
+	  fprintf(out, "\n");
 	}
-	// end with newline
-	fprintf(out, "\n");
 
 	fclose(out);  
 }
@@ -544,7 +547,7 @@ static void proc_server_cmd(char *buf) {
 		quit_name(argv[TOK_NICKSRV], argv[TOK_USER], argv[TOK_TEXT]);
 		return;
 	} else if(!strncmp("NICK", argv[TOK_CMD], 5)) {
-   	        nick_name(argv[TOK_NICKSRV], argv[TOK_TEXT] || argv[TOK_CHAN]); // naive bugfix?
+   	        nick_name(argv[TOK_NICKSRV], argv[TOK_TEXT]);
 		return;
 	} else if(!strncmp("TOPIC", argv[TOK_CMD], 6))
 		snprintf(message, PIPE_BUF, "-!- %s changed topic to \"%s\"", argv[TOK_NICKSRV], argv[TOK_TEXT] ? argv[TOK_TEXT] : "");
