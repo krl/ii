@@ -319,9 +319,9 @@ static void write_names(const char *channel) {
 	  }
 	  // end with newline
 	  fprintf(out, "\n");
-	}
 
-	fclose(out);  
+	  fclose(out);  
+	}
 }
 
 static void add_name(const char *chan, const char *name) {
