@@ -294,6 +294,9 @@ static void print_out(char *channel, char *buf) {
 
 static Channel *lookup_chan(const char *name) {
 	Channel *c;
+	if (!name) {
+		return NULL;
+	}
 	for(c = channels; c; c = c->next)
 		if(!strcmp(name, c->name))
 			return c;
