@@ -23,7 +23,6 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <glib.h>
-#include <glib/gunicode.h>
 
 #ifndef PIPE_BUF /* FreeBSD don't know PIPE_BUF */
 #define PIPE_BUF 4096
